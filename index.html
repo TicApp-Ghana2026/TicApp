@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TicApp Ghana - Data Bundles</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui}
+body{background:#0a0e1a;color:#fff;min-height:100vh}
+.header{background:linear-gradient(135deg,#00c853,#009624);padding:18px;text-align:center;position:sticky;top:0;z-index:10}
+.logo{width:80px;height:80px;background:#fff;border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-weight:900;color:#00a344;font-size:28px}
+.header h1{font-size:22px;letter-spacing:1px}
+.header p{opacity:.9;font-size:13px;margin-top:4px}
+.tabs{display:flex;background:#111827;padding:6px;gap:6px}
+.tab{flex:1;padding:12px;border-radius:10px;border:none;background:#1f2937;color:#9ca3af;font-weight:700;cursor:pointer}
+.tab.active{background:#00c853;color:#fff}
+.container{padding:14px;max-width:500px;margin:0 auto}
+.card{background:#151c2e;border:1px solid #1e2a44;border-radius:16px;padding:14px;margin-bottom:12px}
+.card h3{font-size:14px;color:#9ca3af;margin-bottom:10px;display:flex;justify-content:space-between}
+.bundle{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#1c2740;border-radius:12px;margin-bottom:8px;border:1px solid transparent}
+.bundle:hover{border-color:#00c853}
+.bundle-left b{font-size:15px}
+.bundle-left span{display:block;font-size:11px;color:#8aa0c8;margin-top:2px}
+.bundle-right{text-align:right}
+.price{font-weight:800;color:#00e676;font-size:14px}
+.btn{padding:8px 14px;border-radius:20px;border:none;font-weight:800;font-size:12px;cursor:pointer}
+.btn-buy{background:#00c853;color:#fff}
+.btn-owner{background:#1f2937;color:#fff;width:100%;padding:14px;border-radius:12px;margin-top:10px}
+input,select{width:100%;padding:13px;border-radius:10px;border:1px solid #2a3a5e;background:#0f172a;color:#fff;margin:6px 0;font-size:14px}
+.owner-box{display:none}
+.owner-box.show{display:block}
+.badge{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:800}
+.badge-mtn{background:#ffcc00;color:#000}
+.badge-telecel{background:#e60000;color:#fff}
+.badge-at{background:#0055ff;color:#fff}
+.badge-glo{background:#00a651;color:#fff}
+.order-log{font-size:12px;color:#8aa0c8;line-height:1.6}
+.ai-box{background:linear-gradient(135deg,#1a233f,#151c2e);border:1px solid #2d3f67}
+.ai-msg{background:#0f172a;padding:10px;border-radius:10px;margin:6px 0;font-size:13px}
+</style>
+</head>
+<body>
+<div class="header">
+<div class="logo">TIC</div>
+<h1>TICAPP GHANA</h1>
+<p>Fast • Affordable • Instant Data Bundles • AI Powered</p>
+</div>
+<div class="tabs">
+<button class="tab active" onclick="switchTab('user')">User App</button>
+<button class="tab" onclick="switchTab('owner')">Owner Panel</button>
+<button class="tab" onclick="switchTab('ai')">AI Help</button>
+</div>
+<div class="container">
+<div id="userTab">
+<div class="card">
+<h3>Enter Details <span style="color:#00e676">● Live</span></h3>
+<input id="phone" placeholder="Recipient Phone - 024XXXXXXX">
+<select id="network">
+<option value="MTN">MTN Ghana</option>
+<option value="Telecel">Telecel</option>
+<option value="AT">AT (AirtelTigo)</option>
+<option value="Glo">Glo Ghana</option>
+</select>
+</div>
+<div class="card">
+<h3>MTN Bundles <span class="badge badge-mtn">MTN</span></h3>
+<div id="mtnList"></div>
+</div>
+<div class="card">
+<h3>Telecel Bundles <span class="badge badge-telecel">Telecel</span></h3>
+<div id="telecelList"></div>
+</div>
+<div class="card">
+<h3>AT Bundles <span class="badge badge-at">AT</span></h3>
+<div id="atList"></div>
+</div>
+<div class="card">
+<h3>Order History</h3>
+<div id="history" class="order-log">No orders yet.</div>
+</div>
+</div>
+<div id="ownerTab" class="owner-box">
+<div class="card">
+<h3>Owner Login</h3>
+<input id="ownerPass" type="password" placeholder="Password: tic2024">
+<button class="btn-owner" onclick="ownerLogin()">Login to Owner Panel</button>
+</div>
+<div id="ownerContent" class="owner-box">
+<div class="card">
+<h3>Today Stats</h3>
+<p>Total Orders: <b id="totalOrders">0</b></p>
+<p>Total Profit: <b style="color:#00e676">GHS <span id="totalProfit">0</span></b></p>
+<p>Pending: <b id="pendingOrders">0</b></p>
+</div>
+<div class="card">
+<h3>All Orders (Admin)</h3>
+<div id="adminOrders" class="order-log"></div>
+<button class="btn-owner" style="background:#e60000" onclick="clearOrders()">Clear All Orders</button>
+</div>
+</div>
+</div>
+<div id="aiTab" class="owner-box">
+<div class="card ai-box">
+<h3>TicApp AI Assistant 🤖</h3>
+<div id="aiChat">
+<div class="ai-msg">Hi! I'm your TicApp AI. Ask me about data bundles!</div>
+</div>
+<input id="aiInput" placeholder="Ask: Which bundle is cheapest?">
+<button class="btn-owner" style="background:#00c853" onclick="askAI()">Ask AI</button>
+</div>
+</div>
+</div>
+<script>
+const bundles = {
+ MTN: [{gb:1,base:5},{gb:2,base:9},{gb:3,base:13},{gb:4,base:18},{gb:5,base:22},{gb:8,base:33},{gb:10,base:40}],
+ Telecel: [{gb:1,base:5},{gb:2,base:9},{gb:3,base:13},{gb:5,base:21},{gb:8,base:32},{gb:10,base:38}],
+ AT: [{gb:1,base:4.5},{gb:2,base:8.5},{gb:3,base:12},{gb:5,base:19},{gb:10,base:35}]
+};
+let profit = {MTN:2, Telecel:2, AT:2, Glo:2};
+let orders = JSON.parse(localStorage.getItem('tic_orders')||'[]');
+function renderBundles(){
+ function makeList(net, el){
+   const list = bundles[net]||[];
+   document.getElementById(el).innerHTML = list.map(b=>{
+     const sell = (b.base + profit[net]).toFixed(2);
+     return `<div class="bundle"><div class="bundle-left"><b>${b.gb}GB</b><span>${net} • Non-Expiry</span></div><div class="bundle-right"><div class="price">GHS ${sell}</div><button class="btn btn-buy" onclick="buy('${net}',${b.gb},${sell})">BUY</button></div></div>`
+   }).join('');
+ }
+ makeList('MTN','mtnList'); makeList('Telecel','telecelList'); makeList('AT','atList'); updateStats();
+}
+function buy(net, gb, price){
+ const phone = document.getElementById('phone').value;
+ if(!phone || phone.length<10){alert('Enter valid phone number!');return;}
+ const order={id:Date.now(),phone,net,gb,price,time:new Date().toLocaleString(),status:'Pending'};
+ orders.unshift(order); localStorage.setItem('tic_orders',JSON.stringify(orders));
+ alert(`Order placed! ${gb}GB for ${phone} - GHS ${price}. Pay via MoMo then WhatsApp screenshot.`);
+ renderHistory(); updateStats();
+}
+function renderHistory(){
+ const h = document.getElementById('history');
+ if(orders.length==0){h.innerHTML='No orders yet.';return;}
+ h.innerHTML = orders.slice(0,10).map(o=>`[${o.time}] ${o.net} ${o.gb}GB to ${o.phone} - GHS ${o.price}`).join('<br>');
+ const admin = document.getElementById('adminOrders'); if(admin) admin.innerHTML = orders.map(o=>`#${o.id} | ${o.phone} | ${o.net} ${o.gb}GB | GHS ${o.price} | ${o.time}`).join('<br>');
+}
+function switchTab(t){
+ document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active')); event.target.classList.add('active');
+ document.getElementById('userTab').style.display = t=='user'?'block':'none';
+ document.getElementById('ownerTab').style.display = t=='owner'?'block':'none';
+ document.getElementById('aiTab').style.display = t=='ai'?'block':'none';
+ if(t=='owner') document.getElementById('ownerTab').classList.add('show');
+ if(t=='ai') document.getElementById('aiTab').classList.add('show');
+}
+function ownerLogin(){
+ if(document.getElementById('ownerPass').value=='tic2024'){ document.getElementById('ownerContent').classList.add('show'); alert('Owner login success!'); renderHistory(); }else alert('Wrong password!');
+}
+function updateStats(){
+ document.getElementById('totalOrders').innerText=orders.length;
+ document.getElementById('totalProfit').innerText=(orders.length*profit.MTN).toFixed(2);
+ document.getElementById('pendingOrders').innerText=orders.length;
+ renderHistory();
+}
+function clearOrders(){ if(confirm('Clear all?')){orders=[];localStorage.removeItem('tic_orders');updateStats();}}
+function askAI(){
+ const q=document.getElementById('aiInput').value.toLowerCase(); if(!q)return;
+ let ans="Best deal today is MTN 10GB at GHS 42 - great for students! AT is cheapest for small bundles.";
+ if(q.includes('cheap')) ans="AT 1GB is cheapest (GHS 6.5), MTN 10GB best value. Add GHS 2 profit always.";
+ if(q.includes('sell')) ans="Post 3x daily on WhatsApp, use TikTok, offer 100MB free for referral.";
+ const chat=document.getElementById('aiChat'); chat.innerHTML+=`<div class="ai-msg"><b>You:</b> ${q}</div><div class="ai-msg"><b>AI:</b> ${ans}</div>`;
+ document.getElementById('aiInput').value='';
+}
+renderBundles();
+</script>
+</body>
+</html>
